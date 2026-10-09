@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "User Registration (iPhone Simulator)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "A1CBE9D2-BD85-4B66-8E5B-0ED2884DF418",
+      "preLaunchTask": "Boot iPhone Simulator"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Boot iPhone Simulator",
+      "type": "shell",
+      "command": "xcrun simctl boot A1CBE9D2-BD85-4B66-8E5B-0ED2884DF418 2>/dev/null; open -a Simulator; xcrun simctl bootstatus A1CBE9D2-BD85-4B66-8E5B-0ED2884DF418",
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": []
+    }
+  ]
+}
