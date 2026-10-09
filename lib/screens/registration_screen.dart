@@ -14,11 +14,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  final _confirmPasswordFieldKey = GlobalKey<FormFieldState<String>>();
+
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -42,10 +51,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Profile Setup',
-                      style: theme.textTheme.headlineSmall,
-                    ),
+                    Text('Profile Setup', style: theme.textTheme.headlineSmall),
                     const SizedBox(height: 4),
                     Text(
                       'Fill in your details to register.',
@@ -80,6 +86,71 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         border: OutlineInputBorder(),
                       ),
                       validator: Validators.email,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      key: const Key('passwordField'),
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        helperText:
+                            'At least ${Validators.minPasswordLength} characters',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          tooltip: _obscurePassword
+                              ? 'Show password'
+                              : 'Hide password',
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
+                      ),
+                      validator: Validators.password,
+                      onChanged: (_) {
+                        // Keep the "Passwords do not match" error in sync
+                        // when the password changes after confirming it.
+                        if (_confirmPasswordController.text.isNotEmpty) {
+                          _confirmPasswordFieldKey.currentState?.validate();
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      key: _confirmPasswordFieldKey,
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirmPassword,
+                      textInputAction: TextInputAction.done,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        prefixIcon: const Icon(Icons.lock_reset_outlined),
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          tooltip: _obscureConfirmPassword
+                              ? 'Show password'
+                              : 'Hide password',
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscureConfirmPassword =
+                                !_obscureConfirmPassword,
+                          ),
+                        ),
+                      ),
+                      validator: (value) => Validators.confirmPassword(
+                        value,
+                        _passwordController.text,
+                      ),
                     ),
                   ],
                 ),
