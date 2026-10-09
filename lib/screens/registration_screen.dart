@@ -35,6 +35,66 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     super.dispose();
   }
 
+  void _submit() {
+    FocusScope.of(context).unfocus();
+
+    final isValid = _formKey.currentState!.validate();
+    if (!isValid) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: const Text('Please fix the errors in the form.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      return;
+    }
+
+    final data = RegistrationData(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      role: _role,
+      acceptedTerms: _acceptedTerms,
+    );
+    debugPrint('Registration successful:\n$data');
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Welcome, ${data.fullName}! Registration successful.'),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
+        title: const Text('Registration Successful'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Name: ${data.fullName}'),
+            Text('Email: ${data.email}'),
+            Text('Role: ${data.role.label}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -132,6 +192,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirmPassword,
                       textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _submit(),
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
                         prefixIcon: const Icon(Icons.lock_reset_outlined),
@@ -211,6 +272,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      key: const Key('registerButton'),
+                      onPressed: _submit,
+                      icon: const Icon(Icons.how_to_reg),
+                      label: const Text('Register'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
                       ),
                     ),
                   ],
