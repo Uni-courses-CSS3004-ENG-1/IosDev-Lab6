@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/registration_data.dart';
 import '../utils/validators.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -21,6 +22,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  UserRole _role = UserRole.student;
 
   @override
   void dispose() {
@@ -151,6 +154,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         value,
                         _passwordController.text,
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<UserRole>(
+                      key: const Key('roleField'),
+                      initialValue: _role,
+                      decoration: const InputDecoration(
+                        labelText: 'Role',
+                        prefixIcon: Icon(Icons.badge_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (final role in UserRole.values)
+                          DropdownMenuItem(
+                            value: role,
+                            child: Text(role.label),
+                          ),
+                      ],
+                      onChanged: (role) {
+                        if (role != null) setState(() => _role = role);
+                      },
                     ),
                   ],
                 ),
