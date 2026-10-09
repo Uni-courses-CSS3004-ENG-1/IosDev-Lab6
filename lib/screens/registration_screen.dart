@@ -24,6 +24,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _obscureConfirmPassword = true;
 
   UserRole _role = UserRole.student;
+  bool _acceptedTerms = false;
 
   @override
   void dispose() {
@@ -174,6 +175,43 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       onChanged: (role) {
                         if (role != null) setState(() => _role = role);
                       },
+                    ),
+                    const SizedBox(height: 8),
+                    // Wrapped in a FormField so the Form's validate() also
+                    // blocks registration until the box is checked.
+                    FormField<bool>(
+                      key: const Key('termsField'),
+                      initialValue: _acceptedTerms,
+                      validator: (accepted) => accepted == true
+                          ? null
+                          : 'You must accept the Terms and Conditions',
+                      builder: (field) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CheckboxListTile(
+                            value: field.value ?? false,
+                            onChanged: (checked) {
+                              field.didChange(checked);
+                              setState(() => _acceptedTerms = checked ?? false);
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text(
+                              'I accept the Terms and Conditions',
+                            ),
+                          ),
+                          if (field.hasError)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: Text(
+                                field.errorText!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
