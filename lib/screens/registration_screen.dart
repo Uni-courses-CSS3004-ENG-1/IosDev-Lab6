@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/registration_data.dart';
 import '../utils/validators.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -22,6 +23,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
+  UserRole _role = UserRole.student;
+  bool _acceptedTerms = false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -29,6 +33,66 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _submit() {
+    FocusScope.of(context).unfocus();
+
+    final isValid = _formKey.currentState!.validate();
+    if (!isValid) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: const Text('Please fix the errors in the form.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      return;
+    }
+
+    final data = RegistrationData(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      role: _role,
+      acceptedTerms: _acceptedTerms,
+    );
+    debugPrint('Registration successful:\n$data');
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Welcome, ${data.fullName}! Registration successful.'),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
+        title: const Text('Registration Successful'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Name: ${data.fullName}'),
+            Text('Email: ${data.email}'),
+            Text('Role: ${data.role.label}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -128,6 +192,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirmPassword,
                       textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _submit(),
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
                         prefixIcon: const Icon(Icons.lock_reset_outlined),
@@ -150,6 +215,73 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       validator: (value) => Validators.confirmPassword(
                         value,
                         _passwordController.text,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<UserRole>(
+                      key: const Key('roleField'),
+                      initialValue: _role,
+                      decoration: const InputDecoration(
+                        labelText: 'Role',
+                        prefixIcon: Icon(Icons.badge_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (final role in UserRole.values)
+                          DropdownMenuItem(
+                            value: role,
+                            child: Text(role.label),
+                          ),
+                      ],
+                      onChanged: (role) {
+                        if (role != null) setState(() => _role = role);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    // Wrapped in a FormField so the Form's validate() also
+                    // blocks registration until the box is checked.
+                    FormField<bool>(
+                      key: const Key('termsField'),
+                      initialValue: _acceptedTerms,
+                      validator: (accepted) => accepted == true
+                          ? null
+                          : 'You must accept the Terms and Conditions',
+                      builder: (field) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CheckboxListTile(
+                            value: field.value ?? false,
+                            onChanged: (checked) {
+                              field.didChange(checked);
+                              setState(() => _acceptedTerms = checked ?? false);
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text(
+                              'I accept the Terms and Conditions',
+                            ),
+                          ),
+                          if (field.hasError)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: Text(
+                                field.errorText!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      key: const Key('registerButton'),
+                      onPressed: _submit,
+                      icon: const Icon(Icons.how_to_reg),
+                      label: const Text('Register'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
                       ),
                     ),
                   ],
